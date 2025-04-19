@@ -52,6 +52,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				sensor: {
+					temperature: '#FF6B6B',
+					humidity: '#4ECDC4',
+					pressure: '#8675A9',
+					light: '#FFD166',
+					motion: '#06D6A0',
+					default: '#1A936F'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
