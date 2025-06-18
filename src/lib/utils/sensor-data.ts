@@ -17,7 +17,7 @@ export interface Device {
   name: string;
   location: string;
   status: "online" | "offline" | "warning";
-  lastSeen: string;
+  last_seen: string;  // Changed from lastSeen to match database
   type: string;
 }
 

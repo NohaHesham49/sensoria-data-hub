@@ -17,9 +17,9 @@ export const useSensorData = (hours: number = 24) => {
       
       return data.map(item => ({
         timestamp: item.timestamp,
-        temperature: parseFloat(item.temperature || "0"),
-        humidity: parseFloat(item.humidity || "0"),
-        pressure: parseFloat(item.pressure || "0"),
+        temperature: Number(item.temperature || 0),
+        humidity: Number(item.humidity || 0),
+        pressure: Number(item.pressure || 0),
         light: item.light || 0,
         motion: item.motion || false,
       })) as SensorData[];
@@ -43,9 +43,9 @@ export const useLatestSensorData = () => {
       
       return {
         timestamp: data.timestamp,
-        temperature: parseFloat(data.temperature || "0"),
-        humidity: parseFloat(data.humidity || "0"),
-        pressure: parseFloat(data.pressure || "0"),
+        temperature: Number(data.temperature || 0),
+        humidity: Number(data.humidity || 0),
+        pressure: Number(data.pressure || 0),
         light: data.light || 0,
         motion: data.motion || false,
       } as SensorData;

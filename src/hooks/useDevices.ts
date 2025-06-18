@@ -22,7 +22,7 @@ export const useAddDevice = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (device: Omit<Device, "id" | "lastSeen">) => {
+    mutationFn: async (device: Omit<Device, "id" | "last_seen">) => {
       const newDevice = {
         id: `sensor_${Math.floor(Math.random() * 9000) + 1000}`,
         name: device.name,
