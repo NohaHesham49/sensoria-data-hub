@@ -48,7 +48,7 @@ export function DeviceList({ devices }: DeviceListProps) {
                 </TableCell>
                 <TableCell>{device.type}</TableCell>
                 <TableCell>
-                  {formatDistanceToNow(new Date(device.lastSeen), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(device.last_seen), { addSuffix: true })}
                 </TableCell>
               </TableRow>
             ))}

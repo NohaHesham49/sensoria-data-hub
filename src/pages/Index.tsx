@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SensorCard } from "@/components/dashboard/SensorCard";
@@ -115,14 +116,7 @@ const Dashboard = () => {
           />
         </div>
         
-        <DeviceList devices={devices.map(d => ({
-          id: d.id,
-          name: d.name,
-          location: d.location || "Unknown",
-          status: d.status,
-          lastSeen: d.last_seen,
-          type: d.type
-        }))} />
+        <DeviceList devices={devices} />
       </div>
     </MainLayout>
   );

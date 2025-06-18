@@ -88,7 +88,7 @@ export const getMockDevices = (): Device[] => {
       name: "Living Room Sensor",
       location: "Living Room",
       status: "online",
-      lastSeen: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
+      last_seen: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
       type: "Environmental"
     },
     {
@@ -96,7 +96,7 @@ export const getMockDevices = (): Device[] => {
       name: "Kitchen Sensor",
       location: "Kitchen",
       status: "online",
-      lastSeen: format(subHours(new Date(), 1), "yyyy-MM-dd'T'HH:mm:ss"),
+      last_seen: format(subHours(new Date(), 1), "yyyy-MM-dd'T'HH:mm:ss"),
       type: "Environmental"
     },
     {
@@ -104,7 +104,7 @@ export const getMockDevices = (): Device[] => {
       name: "Bedroom Sensor",
       location: "Bedroom",
       status: "warning",
-      lastSeen: format(subHours(new Date(), 3), "yyyy-MM-dd'T'HH:mm:ss"),
+      last_seen: format(subHours(new Date(), 3), "yyyy-MM-dd'T'HH:mm:ss"),
       type: "Environmental"
     },
     {
@@ -112,7 +112,7 @@ export const getMockDevices = (): Device[] => {
       name: "Garage Sensor",
       location: "Garage",
       status: "offline",
-      lastSeen: format(subHours(new Date(), 12), "yyyy-MM-dd'T'HH:mm:ss"),
+      last_seen: format(subHours(new Date(), 12), "yyyy-MM-dd'T'HH:mm:ss"),
       type: "Security"
     }
   ];
