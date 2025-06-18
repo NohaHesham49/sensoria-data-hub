@@ -2,9 +2,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Device } from "@/lib/utils/sensor-data";
+import { useEffect } from "react";
 
 export const useDevices = () => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ["devices"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -16,6 +19,31 @@ export const useDevices = () => {
       return data as Device[];
     },
   });
+
+  // Set up real-time subscription for devices
+  useEffect(() => {
+    const channel = supabase
+      .channel('devices-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'devices'
+        },
+        () => {
+          // Invalidate and refetch when devices change
+          queryClient.invalidateQueries({ queryKey: ["devices"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 };
 
 export const useAddDevice = () => {

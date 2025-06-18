@@ -1,10 +1,13 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SensorData } from "@/lib/utils/sensor-data";
+import { useEffect } from "react";
 
 export const useSensorData = (hours: number = 24) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ["sensorData", hours],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,12 +27,40 @@ export const useSensorData = (hours: number = 24) => {
         motion: item.motion || false,
       })) as SensorData[];
     },
-    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    refetchInterval: 30000, // Fallback polling every 30 seconds
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('sensor-data-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sensor_data'
+        },
+        () => {
+          // Invalidate and refetch the query when data changes
+          queryClient.invalidateQueries({ queryKey: ["sensorData", hours] });
+          queryClient.invalidateQueries({ queryKey: ["latestSensorData"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, hours]);
+
+  return query;
 };
 
 export const useLatestSensorData = () => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ["latestSensorData"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,6 +81,31 @@ export const useLatestSensorData = () => {
         motion: data.motion || false,
       } as SensorData;
     },
-    refetchInterval: 5000,
+    refetchInterval: 30000, // Fallback polling every 30 seconds
   });
+
+  // Set up real-time subscription for latest data
+  useEffect(() => {
+    const channel = supabase
+      .channel('latest-sensor-data-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'sensor_data'
+        },
+        () => {
+          // Invalidate and refetch when new data is inserted
+          queryClient.invalidateQueries({ queryKey: ["latestSensorData"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 };

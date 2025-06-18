@@ -4,6 +4,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { SensorCard } from "@/components/dashboard/SensorCard";
 import { SensorChart } from "@/components/dashboard/SensorChart";
 import { DeviceList } from "@/components/dashboard/DeviceList";
+import { RealtimeIndicator } from "@/components/dashboard/RealtimeIndicator";
 import { useSensorData, useLatestSensorData } from "@/hooks/useSensorData";
 import { useDevices } from "@/hooks/useDevices";
 import { 
@@ -50,7 +51,10 @@ const Dashboard = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <RealtimeIndicator />
+        </div>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <SensorCard 
