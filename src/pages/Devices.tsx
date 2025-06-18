@@ -8,13 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Device, getMockDevices } from "@/lib/utils/sensor-data";
+import { useDevices, useAddDevice, useDeleteDevice } from "@/hooks/useDevices";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Plus, Edit, Trash } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const DevicesPage = () => {
-  const [devices, setDevices] = useState<Device[]>(getMockDevices());
-  const [newDevice, setNewDevice] = useState<Partial<Device>>({
+  const { data: devices = [], isLoading } = useDevices();
+  const addDeviceMutation = useAddDevice();
+  const deleteDeviceMutation = useDeleteDevice();
+  const { toast } = useToast();
+  
+  const [newDevice, setNewDevice] = useState({
     name: "",
     location: "",
     type: "Environmental"
@@ -22,33 +27,73 @@ const DevicesPage = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleAddDevice = () => {
-    const now = new Date();
-    const device: Device = {
-      id: `sensor_${(Math.floor(Math.random() * 9000) + 1000).toString()}`,
-      name: newDevice.name || "New Sensor",
-      location: newDevice.location || "Unknown",
-      status: "offline",
-      lastSeen: now.toISOString(),
-      type: newDevice.type || "Environmental"
-    };
-    
-    setDevices([...devices, device]);
-    setNewDevice({
-      name: "",
-      location: "",
-      type: "Environmental"
-    });
-    setIsAddDialogOpen(false);
+  const handleAddDevice = async () => {
+    if (!newDevice.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Device name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await addDeviceMutation.mutateAsync({
+        name: newDevice.name,
+        location: newDevice.location,
+        type: newDevice.type,
+        status: "offline"
+      });
+      
+      setNewDevice({
+        name: "",
+        location: "",
+        type: "Environmental"
+      });
+      setIsAddDialogOpen(false);
+      
+      toast({
+        title: "Success",
+        description: "Device added successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add device",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleRemoveDevice = (id: string) => {
-    setDevices(devices.filter(device => device.id !== id));
+  const handleRemoveDevice = async (id: string) => {
+    try {
+      await deleteDeviceMutation.mutateAsync(id);
+      toast({
+        title: "Success",
+        description: "Device removed successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove device",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading devices...</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const filteredDevices = devices.filter(device => 
     device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    device.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (device.location || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     device.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
     device.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -119,7 +164,12 @@ const DevicesPage = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleAddDevice}>Add Device</Button>
+                <Button 
+                  onClick={handleAddDevice}
+                  disabled={addDeviceMutation.isPending}
+                >
+                  {addDeviceMutation.isPending ? "Adding..." : "Add Device"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -163,7 +213,7 @@ const DevicesPage = () => {
                     <TableRow key={device.id}>
                       <TableCell className="font-mono text-sm">{device.id}</TableCell>
                       <TableCell className="font-medium">{device.name}</TableCell>
-                      <TableCell>{device.location}</TableCell>
+                      <TableCell>{device.location || "Unknown"}</TableCell>
                       <TableCell>{device.type}</TableCell>
                       <TableCell>
                         <Badge 
@@ -174,7 +224,7 @@ const DevicesPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {formatDistanceToNow(parseISO(device.lastSeen), { addSuffix: true })}
+                        {device.last_seen ? formatDistanceToNow(parseISO(device.last_seen), { addSuffix: true }) : "Never"}
                       </TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="ghost" size="icon">
@@ -185,6 +235,7 @@ const DevicesPage = () => {
                           size="icon" 
                           className="text-destructive" 
                           onClick={() => handleRemoveDevice(device.id)}
+                          disabled={deleteDeviceMutation.isPending}
                         >
                           <Trash className="h-4 w-4" />
                         </Button>

@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SensorData, generateMockHistoricalData } from "@/lib/utils/sensor-data";
-import { format, parseISO, subDays } from "date-fns";
+import { useSensorData } from "@/hooks/useSensorData";
+import { format, parseISO } from "date-fns";
 import {
   AreaChart,
   Area,
@@ -24,16 +23,22 @@ import {
 } from "recharts";
 
 const Analytics = () => {
-  const [data, setData] = useState<SensorData[]>([]);
   const [timeRange, setTimeRange] = useState("24h");
   
-  useEffect(() => {
-    // Generate historical data based on selected time range
-    const hours = timeRange === "24h" ? 24 : timeRange === "7d" ? 24 * 7 : 24 * 30;
-    const histData = generateMockHistoricalData(hours);
-    setData(histData);
-  }, [timeRange]);
+  // Calculate hours based on time range
+  const hours = timeRange === "24h" ? 24 : timeRange === "7d" ? 24 * 7 : 24 * 30;
+  const { data = [], isLoading } = useSensorData(hours);
   
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading analytics data...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   // Calculate average values
   const calculateAverages = () => {
     if (data.length === 0) return { temperature: 0, humidity: 0, pressure: 0, light: 0 };
@@ -57,17 +62,17 @@ const Analytics = () => {
   
   // Calculate min and max values
   const mins = {
-    temperature: Math.min(...data.map(d => d.temperature)),
-    humidity: Math.min(...data.map(d => d.humidity)),
-    pressure: Math.min(...data.map(d => d.pressure)),
-    light: Math.min(...data.map(d => d.light))
+    temperature: data.length > 0 ? Math.min(...data.map(d => d.temperature)) : 0,
+    humidity: data.length > 0 ? Math.min(...data.map(d => d.humidity)) : 0,
+    pressure: data.length > 0 ? Math.min(...data.map(d => d.pressure)) : 0,
+    light: data.length > 0 ? Math.min(...data.map(d => d.light)) : 0
   };
   
   const maxs = {
-    temperature: Math.max(...data.map(d => d.temperature)),
-    humidity: Math.max(...data.map(d => d.humidity)),
-    pressure: Math.max(...data.map(d => d.pressure)),
-    light: Math.max(...data.map(d => d.light))
+    temperature: data.length > 0 ? Math.max(...data.map(d => d.temperature)) : 0,
+    humidity: data.length > 0 ? Math.max(...data.map(d => d.humidity)) : 0,
+    pressure: data.length > 0 ? Math.max(...data.map(d => d.pressure)) : 0,
+    light: data.length > 0 ? Math.max(...data.map(d => d.light)) : 0
   };
   
   // Format time for x axis

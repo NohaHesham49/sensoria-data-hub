@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,12 +7,60 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { useAlertSettings, useUpdateAlertSettings } from "@/hooks/useAlertSettings";
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
+  const { data: alertSettings, isLoading } = useAlertSettings();
+  const updateAlertSettings = useUpdateAlertSettings();
+  const { toast } = useToast();
+  
   const [pollingInterval, setPollingInterval] = useState(5);
   const [emailAlerts, setEmailAlerts] = useState(false);
   const [temperatureThreshold, setTemperatureThreshold] = useState(35);
   const [humidityThreshold, setHumidityThreshold] = useState(80);
+  
+  useEffect(() => {
+    if (alertSettings) {
+      setEmailAlerts(alertSettings.email_alerts);
+      setTemperatureThreshold(alertSettings.temperature_threshold);
+      setHumidityThreshold(alertSettings.humidity_threshold);
+    }
+  }, [alertSettings]);
+
+  const handleSaveAlertSettings = async () => {
+    if (!alertSettings) return;
+    
+    try {
+      await updateAlertSettings.mutateAsync({
+        id: alertSettings.id,
+        email_alerts: emailAlerts,
+        temperature_threshold: temperatureThreshold,
+        humidity_threshold: humidityThreshold,
+      });
+      
+      toast({
+        title: "Success",
+        description: "Alert settings saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save alert settings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading settings...</div>
+        </div>
+      </MainLayout>
+    );
+  }
   
   return (
     <MainLayout>
@@ -157,7 +204,13 @@ const Settings = () => {
                   </>
                 )}
                 
-                <Button className="mt-4">Save Alert Settings</Button>
+                <Button 
+                  className="mt-4" 
+                  onClick={handleSaveAlertSettings}
+                  disabled={updateAlertSettings.isPending}
+                >
+                  {updateAlertSettings.isPending ? "Saving..." : "Save Alert Settings"}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

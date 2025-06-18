@@ -9,7 +9,101 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      alert_settings: {
+        Row: {
+          created_at: string | null
+          email_alerts: boolean | null
+          humidity_threshold: number | null
+          id: string
+          temperature_threshold: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_alerts?: boolean | null
+          humidity_threshold?: number | null
+          id?: string
+          temperature_threshold?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_alerts?: boolean | null
+          humidity_threshold?: number | null
+          id?: string
+          temperature_threshold?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      devices: {
+        Row: {
+          id: string
+          last_seen: string | null
+          location: string | null
+          name: string
+          status: Database["public"]["Enums"]["device_status"] | null
+          type: string
+        }
+        Insert: {
+          id: string
+          last_seen?: string | null
+          location?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["device_status"] | null
+          type: string
+        }
+        Update: {
+          id?: string
+          last_seen?: string | null
+          location?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["device_status"] | null
+          type?: string
+        }
+        Relationships: []
+      }
+      sensor_data: {
+        Row: {
+          device_id: string
+          humidity: number | null
+          id: string
+          light: number | null
+          motion: boolean | null
+          pressure: number | null
+          temperature: number | null
+          timestamp: string | null
+        }
+        Insert: {
+          device_id: string
+          humidity?: number | null
+          id?: string
+          light?: number | null
+          motion?: boolean | null
+          pressure?: number | null
+          temperature?: number | null
+          timestamp?: string | null
+        }
+        Update: {
+          device_id?: string
+          humidity?: number | null
+          id?: string
+          light?: number | null
+          motion?: boolean | null
+          pressure?: number | null
+          temperature?: number | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensor_data_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +112,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      device_status: "online" | "offline" | "warning"
+      device_type: "Environmental" | "Security" | "Power" | "Other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +228,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      device_status: ["online", "offline", "warning"],
+      device_type: ["Environmental", "Security", "Power", "Other"],
+    },
   },
 } as const

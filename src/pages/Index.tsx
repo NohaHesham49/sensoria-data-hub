@@ -1,15 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SensorCard } from "@/components/dashboard/SensorCard";
 import { SensorChart } from "@/components/dashboard/SensorChart";
 import { DeviceList } from "@/components/dashboard/DeviceList";
-import { 
-  generateMockHistoricalData, 
-  getLatestSensorData, 
-  getMockDevices, 
-  createMockDataStream,
-  SensorData
-} from "@/lib/utils/sensor-data";
+import { useSensorData, useLatestSensorData } from "@/hooks/useSensorData";
+import { useDevices } from "@/hooks/useDevices";
 import { 
   ChartBar,
   ToggleLeft,
@@ -17,36 +13,28 @@ import {
 } from "lucide-react";
 
 const Dashboard = () => {
-  const [historicalData, setHistoricalData] = useState<SensorData[]>([]);
-  const [latestData, setLatestData] = useState<SensorData | null>(null);
-  const [devices, setDevices] = useState(getMockDevices());
+  const { data: historicalData = [], isLoading: isLoadingHistory } = useSensorData(24);
+  const { data: latestData, isLoading: isLoadingLatest } = useLatestSensorData();
+  const { data: devices = [], isLoading: isLoadingDevices } = useDevices();
 
-  useEffect(() => {
-    // Load initial historical data
-    const data = generateMockHistoricalData(24);
-    setHistoricalData(data);
-    
-    // Set initial latest data
-    setLatestData(getLatestSensorData());
-    
-    // Set up real-time data stream
-    const cleanupFn = createMockDataStream((newData) => {
-      setLatestData(newData);
-      setHistoricalData(prev => {
-        const updated = [...prev, newData];
-        // Keep only the last 24 hours of data
-        if (updated.length > 24) {
-          return updated.slice(updated.length - 24);
-        }
-        return updated;
-      });
-    }, 5000); // Update every 5 seconds
-    
-    return () => cleanupFn();
-  }, []);
+  if (isLoadingHistory || isLoadingLatest || isLoadingDevices) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading dashboard data...</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!latestData) {
-    return <div>Loading...</div>;
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">No sensor data available</div>
+        </div>
+      </MainLayout>
+    );
   }
 
   // Calculate changes from previous hour
@@ -128,7 +116,14 @@ const Dashboard = () => {
           />
         </div>
         
-        <DeviceList devices={devices} />
+        <DeviceList devices={devices.map(d => ({
+          id: d.id,
+          name: d.name,
+          location: d.location || "Unknown",
+          status: d.status,
+          lastSeen: d.last_seen,
+          type: d.type
+        }))} />
       </div>
     </MainLayout>
   );
