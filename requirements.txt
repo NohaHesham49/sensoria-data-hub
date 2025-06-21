@@ -1,0 +1,4 @@
+
+# Python dependencies for Raspberry Pi DHT11 sensor logger
+Adafruit-DHT==1.4.0
+requests==2.31.0
