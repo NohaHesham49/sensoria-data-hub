@@ -23,15 +23,24 @@ GND (-)      →    Ground (Pin 6)
 
 ## Installation
 
-1. **Clone or copy these files to your Raspberry Pi**
+1. **Transfer this folder to your Raspberry Pi**
+   ```bash
+   scp -r raspberry-pi/ pi@your-pi-ip:~/iot-sensor/
+   ```
 
-2. **Run the installation script:**
+2. **SSH into your Raspberry Pi and navigate to the folder**
+   ```bash
+   ssh pi@your-pi-ip
+   cd ~/iot-sensor/
+   ```
+
+3. **Run the installation script:**
    ```bash
    chmod +x install_dependencies.sh
    ./install_dependencies.sh
    ```
 
-3. **Reboot your Raspberry Pi** (required for GPIO permissions):
+4. **Reboot your Raspberry Pi** (required for GPIO permissions):
    ```bash
    sudo reboot
    ```
@@ -60,7 +69,7 @@ python3 raspberry_pi_sensor.py
    sudo nano /etc/systemd/system/iot-sensor.service
    ```
 
-2. Add this content (replace `/path/to/` with actual path):
+2. Add this content (replace `/home/pi/iot-sensor/` with actual path):
    ```ini
    [Unit]
    Description=IoT Dashboard Sensor Logger
@@ -69,8 +78,8 @@ python3 raspberry_pi_sensor.py
    [Service]
    Type=simple
    User=pi
-   WorkingDirectory=/path/to/your/script/
-   ExecStart=/usr/bin/python3 /path/to/your/script/raspberry_pi_sensor.py
+   WorkingDirectory=/home/pi/iot-sensor/
+   ExecStart=/usr/bin/python3 /home/pi/iot-sensor/raspberry_pi_sensor.py
    Restart=always
    RestartSec=10
 
@@ -129,3 +138,21 @@ Once running, your sensor data will appear in the dashboard:
 - Alerts will trigger based on your configured thresholds
 
 The device will automatically appear as "Raspberry Pi DHT11" in your dashboard's device list.
+
+## Transfer Instructions
+
+To transfer this folder to your Raspberry Pi:
+
+1. **Using SCP (from your computer):**
+   ```bash
+   scp -r raspberry-pi/ pi@192.168.1.100:~/iot-sensor/
+   ```
+
+2. **Using USB drive:**
+   - Copy the `raspberry-pi` folder to a USB drive
+   - Insert USB drive into Pi
+   - Copy folder to Pi's home directory
+
+3. **Using GitHub:**
+   - Push this folder to a GitHub repository
+   - Clone on the Pi: `git clone your-repo-url`
